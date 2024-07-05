@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
+
 const Authenticate = () => {
   const router = useRouter();
   const { token } = router.query;
