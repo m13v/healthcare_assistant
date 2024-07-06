@@ -32,7 +32,6 @@ export const Thread: FC = () => {
               AssistantMessage,
             }}
           />
-
           <ThreadScrollToBottom />
         </ThreadPrimitive.Viewport>
 
