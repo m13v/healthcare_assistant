@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { nanoid } from '@/lib/utils'
 import { AI, UIState } from '@/lib/chat/actions'
@@ -7,15 +7,21 @@ import { VercelRSCAssistantProvider, CreateThreadMessage } from '@assistant-ui/r
 import { Thread } from '@/components/ui/assistant-ui/thread'
 import { ReactNode } from "react";
 import { createContext, useEffect, useLayoutEffect, useState } from 'react';
-import { StytchProvider } from '@stytch/nextjs';
-import { createStytchUIClient } from '@stytch/nextjs/ui';
+import { Auth0Provider } from '@auth0/auth0-react';
 
-const stytch = createStytchUIClient(process.env.NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN || '');
-
+const domain: string = process.env.NEXT_PUBLIC_AUTH0_DOMAIN || '';
+const clientId: string = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID || '';
 
 export default function IndexPage() {
   const { submitUserMessage } = useActions()
   const [messages, setMessages] = useUIState<typeof AI>()
+  const [redirectUri, setRedirectUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRedirectUri(window.location.origin);
+    }
+  }, []);
 
   const next = async (m: CreateThreadMessage) => {
     if (m.content[0].type !== 'text')
@@ -37,11 +43,19 @@ export default function IndexPage() {
     ])
   }
 
+  if (!redirectUri) {
+    return null; // or a loading spinner
+  }
+
   return (
-    <StytchProvider stytch={stytch}>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{ redirect_uri: redirectUri }}
+    >
       <VercelRSCAssistantProvider messages={messages} append={next as any}>
         <Thread />
       </VercelRSCAssistantProvider>
-    </StytchProvider>
+    </Auth0Provider>
   )
 }
